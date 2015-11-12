@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="wael.mobile.dev.popularmovies.Detail">
+    <item android:id="@+id/action_add" android:title="Add new movie" android:icon="@android:drawable/ic_input_add"
+        android:orderInCategory="100" app:showAsAction="always" />
+    <item android:id="@+id/create_database" android:title="create fake database" android:icon="@android:drawable/stat_notify_sync"
+        android:orderInCategory="200" app:showAsAction="ifRoom" />
+
+
+
+</menu>
