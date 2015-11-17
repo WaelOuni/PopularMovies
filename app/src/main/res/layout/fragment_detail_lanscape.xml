@@ -3,11 +3,12 @@
     android:layout_height="match_parent"
     tools:context="wael.mobile.dev.popularmovies.Detail_lanscape">
 
-
     <TextView
         android:id="@+id/descrption_landscape"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/text_description_size"
         android:textStyle="italic"
-        android:layout_width="match_parent" android:layout_height="match_parent"
          />
 
 </FrameLayout>

@@ -39,6 +39,7 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
     final String[] selecArguments = null;
     ListMoviesCursorAdapter todoAdapter;
     private String mParam1;
+
     private OnFragmentInteractionListener mListener;
     private ContentResolver cr;
     private Cursor cursor;
@@ -127,11 +128,8 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
         movieList.remove(position);
         todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
 
+        mListener.onFragmentInteraction("");
         return false;
-    }
-
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(String description);
     }
 
     private void loadData() {
@@ -177,9 +175,12 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
                 cursor = todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
                 movieList.addAll(array);
                 Toast.makeText(getActivity(), "new 5 movies added", Toast.LENGTH_LONG).show();
-
             }
         });
+    }
+
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(String description);
     }
 
 }

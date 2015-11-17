@@ -3,7 +3,7 @@ package wael.mobile.dev.popularmovies;
 import android.app.Application;
 import android.os.StrictMode;
 
-public class PopularMoviesProviderAppl extends Application {
+public class PopularMoviesProviderApp extends Application {
 
     public void onCreate() {
         super.onCreate();
