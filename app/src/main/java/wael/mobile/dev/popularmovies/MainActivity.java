@@ -288,6 +288,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
+
     public interface FragmentRefreshListener {
         void onRefresh(ArrayList<ListIMoviesWrapper> array, String title, String description);
     }
