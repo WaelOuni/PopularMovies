@@ -21,22 +21,13 @@ import wael.mobile.dev.popularmovies.database.tables.PopularMoviesTable;
 public class PopularMoviesProvider extends ContentProvider {
 
 
-    // wael.mobile.dev.popularmovies.database
-    private PopularMoviesDbHelper mOpenHelper;
-
     private static final String AUTHORITY = "wael.mobile.dev.popularmovies.provider";
-
     public static final Uri RECORDS_CONTENT_URI = Uri.parse("content://"
             + AUTHORITY + "/" + PopularMoviesTable.CONTENT_PATH);
-
-    public static final Uri LISTS_CONTENT_URI = Uri.parse("content://"
-            + AUTHORITY + "/" + ListsTable.CONTENT_PATH);
-
     private static final int RECORDS_ALL = 10;
     private static final int RECORD_ID = 11;
     private static final int LISTS_ALL = 12;
     private static final int LIST_ID = 13;
-
     private static final UriMatcher TEST_PROVIDER_URI_MATCHER;
 
     static {
@@ -51,6 +42,9 @@ public class PopularMoviesProvider extends ContentProvider {
                 + "/#", LIST_ID);
     }
 
+    // wael.mobile.dev.popularmovies.database
+    private PopularMoviesDbHelper mOpenHelper;
+
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase sqlDB = mOpenHelper.getWritableDatabase();
@@ -62,7 +56,7 @@ public class PopularMoviesProvider extends ContentProvider {
                         selectionArgs);
                 break;
             case RECORD_ID:
-                //retrieve the record id to delete
+                //retrieve the movie id to delete
                 id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsDeleted = sqlDB.delete(PopularMoviesTable.TABLE_RECORDS,
@@ -100,9 +94,7 @@ public class PopularMoviesProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         SQLiteDatabase database = mOpenHelper.getWritableDatabase();
         Uri itemUri = null;
-
         long id = 0;
-
 
         switch (TEST_PROVIDER_URI_MATCHER.match(uri)) {
             case RECORDS_ALL:
@@ -134,7 +126,6 @@ public class PopularMoviesProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
-
         return itemUri;
     }
 
@@ -178,7 +169,6 @@ public class PopularMoviesProvider extends ContentProvider {
                 selectionArgs, null, null, sortOrder);
         // Make sure that potential listeners are getting notified
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
-
         return cursor;
     }
 

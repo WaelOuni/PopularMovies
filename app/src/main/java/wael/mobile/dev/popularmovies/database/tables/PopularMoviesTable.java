@@ -7,30 +7,24 @@ import android.provider.BaseColumns;
 public class PopularMoviesTable implements BaseColumns {
 
     // Records wael.mobile.dev.popularmovies.database table
-    public static final String TABLE_RECORDS = "records";
+    public static final String TABLE_RECORDS = "movies";
 
     // table records fields
     public static final String LABEL = "title";
     public static final String DESCRIPTION = "description";
-
-
-
+    // info for content provider
+    public static final String CONTENT_PATH = "records";
+    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
+            + "/vnd.testprovider.movies";
+    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
+            + "/vnd.testprovider.movies";
+    public static final String[] PROJECTION_ALL = {_ID, LABEL, DESCRIPTION};
     // records table creation statement
     private static final String CREATE_RECORDS_TABLE = "CREATE TABLE "
             + TABLE_RECORDS + " (" + _ID
             + " INTEGER PRIMARY KEY AUTOINCREMENT, " + LABEL
             + " TEXT NOT NULL, " +  DESCRIPTION
             + " TEXT); " ;
-
-
-    // info for content provider
-    public static final String CONTENT_PATH = "records";
-    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-            + "/vnd.testprovider.records";
-    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-            + "/vnd.testprovider.records";
-
-    public static final String[] PROJECTION_ALL = { _ID, LABEL, DESCRIPTION};
 
     /**
      * create records table

@@ -3,18 +3,23 @@ package wael.mobile.dev.popularmovies;
 import android.app.FragmentManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -25,18 +30,23 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wael.mobile.dev.popularmovies.database.PopularMoviesProvider;
 import wael.mobile.dev.popularmovies.database.tables.PopularMoviesTable;
-import wael.mobile.dev.popularmovies.model.MovieEntity;
+import wael.mobile.dev.popularmovies.model.MovieItem;
+import wael.mobile.dev.popularmovies.model.TopRated;
 import wael.mobile.dev.popularmovies.ui.AddDialog;
 import wael.mobile.dev.popularmovies.wrapper.ListIMoviesWrapper;
 
 public class MainActivity extends AppCompatActivity implements MovieFragment.OnFragmentInteractionListener, AddDialog.OnAddListener, android.app.LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LIST_CONTENT_KEY = "list_content_key";
     private static final int RECORD_TABLE_ID = 1;
+    public static String IMAGES_URL;
+    public static String SERVER_URL;
     FragmentManager manager;
     Detail_lanscape fragment;
     ContentResolver cr;
@@ -50,14 +60,35 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        IMAGES_URL = getResources().getString(R.string.image_url);
+        SERVER_URL = getResources().getString(R.string.server_url);
         cr = getContentResolver();
         mLoaderManager = getLoaderManager();
-
         if (savedInstanceState == null) {
             mLoaderManager.initLoader(RECORD_TABLE_ID, null, this);
             mObjectList = new ArrayList<ListIMoviesWrapper>();
-            parser = new MovieParser();
-            parser.execute();
+            Timer timer = new Timer();
+            TimerTask task = new TimerTask() {
+                int m = 0;
+
+                @Override
+                public void run() {
+
+                    if (Looper.myLooper() == null) {
+                        Looper.prepare();
+                    }
+                    if (isOnline())
+                        new MovieParser().execute();
+                    else
+                        Toast.makeText(getApplicationContext(), "Echec internet Connexion !", Toast.LENGTH_LONG).show();
+                    m++;
+                    Log.i("timer", "" + m);
+                }
+            };
+            long whenToStart = 1 * 1000L; // 20 seconds
+            long howOften = 25 * 1000L; // 20 seconds
+            timer.scheduleAtFixedRate(task, whenToStart, howOften);
+
         } else {
             mObjectList = (ArrayList<ListIMoviesWrapper>) savedInstanceState.getSerializable(LIST_CONTENT_KEY);
             parser = (MovieParser) savedInstanceState.getSerializable("Ajout");
@@ -79,13 +110,9 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.create_database) {
-            ArrayList<ListIMoviesWrapper> fakeList = createFakeDatabase();
-            if (getFragmentRefreshMultipleListener() != null) {
-                getFragmentRefreshMultipleListener().onRefresh(fakeList);
-            }
+            item.setEnabled(false);
             return true;
         }
         if (id == R.id.action_add) {
@@ -96,40 +123,15 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
         return super.onOptionsItemSelected(item);
     }
 
-
-    // Method for create fake movies's database
-    ArrayList<ListIMoviesWrapper> createFakeDatabase() {
-        ArrayList<ListIMoviesWrapper> fakeList = new ArrayList<ListIMoviesWrapper>();
-        for (int i = 0; i < 5; i++) {
-            ContentValues movieItem = new ContentValues();
-            ListIMoviesWrapper movie = createMovieItem("Movie fake " + i, "Wael ouni movie for testing android application " + getResources().getString(R.string.app_name));
-            movieItem.put(PopularMoviesTable.LABEL, movie.getTitle());
-            movieItem.put(PopularMoviesTable.DESCRIPTION, movie.getDescription());
-            fakeList.add(movie);
-            cr.insert(PopularMoviesProvider.RECORDS_CONTENT_URI, movieItem);
-        }
-        return fakeList;
-    }
-
-
-    private ListIMoviesWrapper createMovieItem(String title, String description) {
-        ListIMoviesWrapper listIMoviesWrapper = new ListIMoviesWrapper();
-        listIMoviesWrapper.setTitle(title);
-        listIMoviesWrapper.setDescription(description);
-
-        return listIMoviesWrapper;
-    }
-
     @Override
     public void onFragmentInteraction(String description) {
         manager = getFragmentManager();
         fragment = (Detail_lanscape) manager.findFragmentById(R.id.fragment3);
         if (fragment != null && fragment.isVisible()) {
-
             fragment.changeData(description);
         } else {
             Intent intent = new Intent(getApplicationContext(), Detail_portrait.class);
-            intent.putExtra("id", description);
+            intent.putExtra("description", description);
             startActivity(intent);
         }
     }
@@ -149,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
         Uri uri = getContentResolver().insert(PopularMoviesProvider.RECORDS_CONTENT_URI, contentValues);
         listIMoviesWrapper.setId(Long.valueOf(uri.getLastPathSegment()));
         if (getFragmentRefreshListener() != null) {
-            getFragmentRefreshListener().onRefresh(listIMoviesWrapper.getTitle(), listIMoviesWrapper.getDescription());
+            getFragmentRefreshListener().onRefresh(mObjectList, listIMoviesWrapper.getTitle(), listIMoviesWrapper.getDescription());
         }
     }
 
@@ -166,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
         if (loader.getId() == RECORD_TABLE_ID) {
             if (data.moveToFirst()) {
                 while (!data.isAfterLast()) {
-                    ListIMoviesWrapper movie = new ListIMoviesWrapper(0, "", "", "");
+                    ListIMoviesWrapper movie = new ListIMoviesWrapper("", "");
                     movie.setTitle(data.getString(data.getColumnIndex(PopularMoviesTable.LABEL)));
 
                     movie.setDescription(data.getString(data.getColumnIndex(PopularMoviesTable.DESCRIPTION)));
@@ -175,7 +177,6 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
                         data.moveToNext();
                     }
                 }
-                //    mAdapter.notifyDataSetChanged();
             }
             data.close();
         }
@@ -244,59 +245,74 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
         return null;
     }
 
-    public interface FragmentRefreshListener {
-        void onRefresh(String title, String description);
-    }
+    public boolean verifyExistMovie(String title) {
 
-    public interface FragmentRefreshMultipleListener {
-        void onRefresh(ArrayList<ListIMoviesWrapper> array);
-    }
-
-    private class MovieParser extends AsyncTask<Void, Void, MovieEntity> {
-        public static final String SERVER_URL = "https://api.themoviedb.org/3/movie/550?api_key=3defbee8a7ff35deff02366f0f76a940";
-        private static final String TAG = "MovieParser";
-        Gson Gsongson;
-
-        @Override
-        protected MovieEntity doInBackground(Void... params) {
-            String data = getJSON(SERVER_URL, 50000);
-            MovieEntity movie;
-            movie = new Gson().fromJson(data, MovieEntity.class);
-            System.out.println(movie);
-
-            Log.i("testgson", movie.getHomepage());
-
-            return movie;
-        }
-
-        @Override
-        protected void onPostExecute(MovieEntity movieEntity) {
-            super.onPostExecute(movieEntity);
-            ListIMoviesWrapper listIMoviesWrapper = new ListIMoviesWrapper();
-            boolean found = false;
-            for (ListIMoviesWrapper listMvRp : mObjectList
-                    ) {
-                Log.i("title", "" + listMvRp.getTitle());
-                if (TextUtils.equals(listMvRp.getTitle(), movieEntity.getOriginal_title())) {
-                    found = true;
-                    Log.i("Equaltitle", "" + listMvRp.getTitle() + "||" + movieEntity.getOriginal_title());
-                    break;
-                }
+        boolean trouve = false;
+        for (ListIMoviesWrapper movie : mObjectList
+                ) {
+            if (TextUtils.equals(movie.getTitle(), title)) {
+                trouve = true;
+                break;
             }
-            if (!found) {
-                listIMoviesWrapper.setTitle(movieEntity.getOriginal_title());
-                listIMoviesWrapper.setDescription(movieEntity.getOverview());
+        }
+        return trouve;
+    }
+
+    public void loadFromWebService(MovieItem[] movieEntities) {
+
+        for (MovieItem Mv : movieEntities
+                ) {
+            ListIMoviesWrapper listIMoviesWrapper = new ListIMoviesWrapper();
+            listIMoviesWrapper.setTitle(Mv.getOriginal_title());
+            listIMoviesWrapper.setDescription(Mv.getOverview() + "&" + Mv.getBackdrop_path());
+            if (!verifyExistMovie(listIMoviesWrapper.getTitle())) {
                 mObjectList.add(listIMoviesWrapper);
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(PopularMoviesTable.LABEL, listIMoviesWrapper.getTitle());
                 contentValues.put(PopularMoviesTable.DESCRIPTION, listIMoviesWrapper.getDescription());
                 Uri uri = getContentResolver().insert(PopularMoviesProvider.RECORDS_CONTENT_URI, contentValues);
                 listIMoviesWrapper.setId(Long.valueOf(uri.getLastPathSegment()));
-                if (getFragmentRefreshListener() != null) {
-                    getFragmentRefreshListener().onRefresh(listIMoviesWrapper.getTitle(), listIMoviesWrapper.getDescription());
-                }
             }
-
         }
+        if (getFragmentRefreshMultipleListener() != null) {
+            getFragmentRefreshMultipleListener().onRefresh(mObjectList);
+        }
+
+
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+
+    public interface FragmentRefreshListener {
+        void onRefresh(ArrayList<ListIMoviesWrapper> array, String title, String description);
+    }
+
+    public interface FragmentRefreshMultipleListener {
+        void onRefresh(ArrayList<ListIMoviesWrapper> array);
+    }
+
+    private class MovieParser extends AsyncTask<Void, Void, MovieItem[]> {
+        private static final String TAG = "MovieParser";
+
+        @Override
+        protected MovieItem[] doInBackground(Void... params) {
+            String data = getJSON(SERVER_URL, 50000);
+            TopRated topRated;
+            MovieItem[] movies;
+            topRated = new Gson().fromJson(data, TopRated.class);
+            movies = topRated.getResults();
+            return movies;
+        }
+
+        @Override
+        protected void onPostExecute(MovieItem[] movieEntities) {
+            super.onPostExecute(movieEntities);
+            loadFromWebService(movieEntities);
+            }
     }
 }

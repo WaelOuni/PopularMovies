@@ -31,7 +31,7 @@ import wael.mobile.dev.popularmovies.wrapper.ListIMoviesWrapper;
  * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
  * interface.
  */
-public class MovieFragment extends Fragment implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
+public class MovieFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -84,12 +84,10 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_movies, container, false);
         final ListView lvItems = (ListView) view.findViewById(R.id.list_movies);
-
         // Setup cursor adapter using cursor from last step
         todoAdapter = new ListMoviesCursorAdapter(getActivity(), cursor);
         lvItems.setAdapter(todoAdapter);
         lvItems.setOnItemClickListener(this);
-        lvItems.setOnItemLongClickListener(this);
         //refresh data in the movieFragment
         refreshUi();
 
@@ -118,34 +116,21 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
+            loadData();
             mListener.onFragmentInteraction(movieList.get(position).getDescription());
         }
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        cr.delete(PopularMoviesProvider.RECORDS_CONTENT_URI, "_id=" + id, selecArguments);
-        movieList.remove(position);
-        todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
-
-        mListener.onFragmentInteraction("");
-        return false;
-    }
-
     private void loadData() {
-
         cr = getActivity().getContentResolver();
-
         cursor = cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null);
         movieList = new ArrayList<>();
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
-
                 ListIMoviesWrapper movie = new ListIMoviesWrapper();
                 movie.setTitle(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.LABEL)));
                 movie.setDescription(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.DESCRIPTION)));
                 movieList.add(movie);
-
                 if (!cursor.isClosed()) {
                     cursor.moveToNext();
                 }
@@ -157,8 +142,10 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
 
         ((MainActivity) getActivity()).setFragmentRefreshListener(new MainActivity.FragmentRefreshListener() {
             @Override
-            public void onRefresh(String title, String description) {
+            public void onRefresh(ArrayList<ListIMoviesWrapper> array, String title, String description) {
                 // Refresh Your Fragment
+                movieList.clear();
+                movieList.addAll(array);
                 cursor = todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
                 ListIMoviesWrapper movie = new ListIMoviesWrapper();
                 movie.setTitle(title);
@@ -174,7 +161,6 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
             public void onRefresh(ArrayList<ListIMoviesWrapper> array) {
                 cursor = todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
                 movieList.addAll(array);
-                Toast.makeText(getActivity(), "new 5 movies added", Toast.LENGTH_LONG).show();
             }
         });
     }

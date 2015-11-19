@@ -38,7 +38,7 @@ public class AddDialog extends DialogFragment {
         initViews(view);
 
         Dialog dialog = builder
-                .setTitle("Add new movie in your database").setView(view)
+                .setTitle(getResources().getText(R.string.dialog_title)).setView(view)
                 .setPositiveButton(
                         getResources().getString(android.R.string.ok),
                         new DialogInterface.OnClickListener() {

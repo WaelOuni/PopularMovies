@@ -6,11 +6,11 @@ package wael.mobile.dev.popularmovies.model;
 public class TopRated {
 
     private String page;
-    private MovieEntity[] results;
+    private MovieItem[] results;
     private int total_pages;
     private int total_results;
 
-    public TopRated(String page, MovieEntity[] results, int total_pages, int total_results) {
+    public TopRated(String page, MovieItem[] results, int total_pages, int total_results) {
         this.page = page;
         this.results = results;
         this.total_pages = total_pages;
@@ -25,11 +25,11 @@ public class TopRated {
         this.page = page;
     }
 
-    public MovieEntity[] getResults() {
+    public MovieItem[] getResults() {
         return results;
     }
 
-    public void setResults(MovieEntity[] results) {
+    public void setResults(MovieItem[] results) {
         this.results = results;
     }
 

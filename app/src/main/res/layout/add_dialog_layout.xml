@@ -10,14 +10,13 @@
         android:id="@+id/title_movie"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Add title of you
-    r movie" />
+        android:hint="Add the title " />
     <EditText
         android:id="@+id/description_movie"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/title_movie"
-        android:hint="Add description of the movie"
+        android:hint="Add the description"
         android:inputType="textMultiLine"
         android:lines="5" />
 

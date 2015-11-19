@@ -14,9 +14,9 @@ public class ListIMoviesWrapper implements Serializable {
 
     }
 
-    public ListIMoviesWrapper(int image, String title, String time, String state) {
+    public ListIMoviesWrapper(String title, String description) {
         mTitle = title;
-        mDescription = time;
+        mDescription = description;
     }
 
     public long getId() {

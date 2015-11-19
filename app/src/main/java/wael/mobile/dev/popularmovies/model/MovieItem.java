@@ -2,11 +2,10 @@ package wael.mobile.dev.popularmovies.model;
 
 import com.google.gson.annotations.SerializedName;
 
-
 /**
- * Created by wael on 13/11/15.
+ * Created by wael on 17/11/15.
  */
-public class MovieEntity {
+public class MovieItem {
 
     private boolean adult;
     private String backdrop_path;
@@ -37,51 +36,10 @@ public class MovieEntity {
     private String title;
 
 
-    //list attribs
-
     private int[] genre_ids;
 
-    public MovieEntity(boolean adult, String backdrop_path, String[] belongs_to_collection,
-                       int budget, Genre[] genres, String homepage, int id, String imdb_id, String original_language,
-                       String original_title, String overview, float popularity, String poster_path,
-                       Company[] production_companies, Country[] production_countries, String release_date, double revenue
-            , int runtime, Language[] spoken_languages, String status, String tagline, String title,
-                       boolean video, float vote_average, int vote_count) {
-
-        this.adult = adult;
-        this.backdrop_path = backdrop_path;
-        this.belongs_to_collection = belongs_to_collection;
-        this.budget = budget;
-        this.genres = genres;
-        this.homepage = homepage;
-        this.id = id;
-        this.imdb_id = imdb_id;
-        this.original_language = original_language;
-        this.original_title = original_title;
-        this.overview = overview;
-        this.popularity = popularity;
-        this.poster_path = poster_path;
-        this.production_companies = production_companies;
-        this.production_countries = production_countries;
-        this.release_date = release_date;
-        this.revenue = revenue;
-        this.runtime = runtime;
-        this.spoken_languages = spoken_languages;
-        this.status = status;
-        this.tagline = tagline;
-        this.title = title;
-        this.video = video;
-        this.vote_average = vote_average;
-        this.vote_count = vote_count;
-    }
-
-    public MovieEntity(int id, String title) {
-        this.title = title;
-        this.id = id;
-    }
-
-    public MovieEntity(boolean adult, String backdrop_path, int[] genre_ids, int id, String original_language, String original_title,
-                       String overview, String release_date, String poster_path, float popularity, String title, boolean video, float vote_average, int vote_count) {
+    public MovieItem(boolean adult, String backdrop_path, int[] genre_ids, int id, String original_language, String original_title,
+                     String overview, String release_date, String poster_path, float popularity, String title, boolean video, float vote_average, int vote_count) {
         this.adult = adult;
         this.backdrop_path = backdrop_path;
         this.genre_ids = genre_ids;
@@ -305,4 +263,6 @@ public class MovieEntity {
     public void setProduction_countries(Country[] production_countries) {
         this.production_countries = production_countries;
     }
+
+
 }

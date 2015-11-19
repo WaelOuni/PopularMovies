@@ -11,7 +11,7 @@ import wael.mobile.dev.popularmovies.database.tables.PopularMoviesTable;
 public class PopularMoviesDbHelper extends SQLiteOpenHelper {
 
     // wael.mobile.dev.popularmovies.database name
-    private static final String DATABASE_NAME = "my-test.db";
+    private static final String DATABASE_NAME = "popularMovies.db";
     // data base version
     private static final int DATABASE_VERSION = 1;
 
