@@ -60,8 +60,29 @@ public class MainActivity extends AppCompatActivity implements MovieFragment.OnF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        String category = "";
+        Intent recupCateg;
+        recupCateg = getIntent();
+        category = recupCateg.getStringExtra("category");
+        switch (category) {
+            case "latest":
+                SERVER_URL = "https://api.themoviedb.org/3/movie/latest?api_key=3defbee8a7ff35deff02366f0f76a940";
+                break;
+            case "now":
+                SERVER_URL = "https://api.themoviedb.org/3/movie/now_playing?api_key=3defbee8a7ff35deff02366f0f76a940";
+                break;
+            case "popular":
+                SERVER_URL = "https://api.themoviedb.org/3/movie/popular?api_key=3defbee8a7ff35deff02366f0f76a940";
+                break;
+            case "top":
+                SERVER_URL = "https://api.themoviedb.org/3/movie/top_rated?api_key=3defbee8a7ff35deff02366f0f76a940";
+                break;
+            case "upcoming":
+                SERVER_URL = "https://api.themoviedb.org/3/movie/upcoming?api_key=3defbee8a7ff35deff02366f0f76a940";
+                break;
+        }
+
         IMAGES_URL = getResources().getString(R.string.image_url);
-        SERVER_URL = getResources().getString(R.string.server_url);
         cr = getContentResolver();
         mLoaderManager = getLoaderManager();
         if (savedInstanceState == null) {
