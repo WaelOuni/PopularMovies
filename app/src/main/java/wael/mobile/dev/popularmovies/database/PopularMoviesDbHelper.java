@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import wael.mobile.dev.popularmovies.database.tables.GenresMoviesTable;
 import wael.mobile.dev.popularmovies.database.tables.ListsTable;
 import wael.mobile.dev.popularmovies.database.tables.PopularMoviesTable;
 
@@ -40,6 +41,7 @@ public class PopularMoviesDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         PopularMoviesTable.onCreate(db);
+        GenresMoviesTable.onCreate(db);
         ListsTable.onCreate(db);
     }
 
@@ -53,6 +55,7 @@ public class PopularMoviesDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         PopularMoviesTable.onUpgrade(db, oldVersion, newVersion);
+        GenresMoviesTable.onUpgrade(db, oldVersion, newVersion);
         ListsTable.onUpgrade(db, oldVersion, newVersion);
     }
 

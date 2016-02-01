@@ -64,8 +64,8 @@ public class AddDialog extends DialogFragment {
 
 
         ListIMoviesWrapper listIMoviesWrapper = new ListIMoviesWrapper();
-        listIMoviesWrapper.setTitle(mLabel.getText().toString());
-        listIMoviesWrapper.setDescription(mDescription.getText().toString());
+        listIMoviesWrapper.setmOriginalTitle(mLabel.getText().toString());
+        listIMoviesWrapper.setmOverView(mDescription.getText().toString());
 
         return listIMoviesWrapper;
     }

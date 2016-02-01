@@ -10,8 +10,8 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="wael.mobile.dev.popularmovies.Acceuil"
-    tools:showIn="@layout/activity_acceuil">
+    tools:context=".Movies"
+    tools:showIn="@layout/activity_movies">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,36 +23,10 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/lay1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <ImageButton
-                    android:id="@+id/imageLatest"
-                    android:layout_width="200px"
-                    android:layout_height="200px"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentTop="true"
-                    android:scaleType="centerInside"
-
-                    android:src="@drawable/newmovies" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:text="Movies 2015"
-                    android:textSize="@dimen/size_acceuil" />
-            </LinearLayout>
-
-            <LinearLayout
 
                 android:id="@+id/lay2"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/lay1">
+                android:layout_height="wrap_content">
 
                 <ImageButton
                     android:id="@+id/imageNowplaying"
@@ -63,7 +37,7 @@
                     android:layout_alignParentTop="true"
                     android:scaleType="centerInside"
 
-                    android:src="@drawable/newmovies" />
+                    android:src="@drawable/nowpl" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -90,7 +64,7 @@
                     android:layout_alignParentTop="true"
                     android:scaleType="centerInside"
 
-                    android:src="@drawable/newmovies" />
+                    android:src="@drawable/popular" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -116,8 +90,7 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentTop="true"
                     android:scaleType="centerInside"
-
-                    android:src="@drawable/newmovies" />
+                    android:src="@drawable/toprated" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -143,8 +116,7 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentTop="true"
                     android:scaleType="centerInside"
-
-                    android:src="@drawable/newmovies" />
+                    android:src="@drawable/upcomingg" />
 
                 <TextView
                     android:layout_width="wrap_content"

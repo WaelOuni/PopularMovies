@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import wael.mobile.dev.popularmovies.database.tables.GenresMoviesTable;
 import wael.mobile.dev.popularmovies.database.tables.ListsTable;
 import wael.mobile.dev.popularmovies.database.tables.PopularMoviesTable;
 
@@ -24,10 +25,14 @@ public class PopularMoviesProvider extends ContentProvider {
     private static final String AUTHORITY = "wael.mobile.dev.popularmovies.provider";
     public static final Uri RECORDS_CONTENT_URI = Uri.parse("content://"
             + AUTHORITY + "/" + PopularMoviesTable.CONTENT_PATH);
+    public static final Uri RECORDS_CONTENT_URI2 = Uri.parse("content://"
+            + AUTHORITY + "/" + GenresMoviesTable.CONTENT_PATH);
     private static final int RECORDS_ALL = 10;
     private static final int RECORD_ID = 11;
     private static final int LISTS_ALL = 12;
     private static final int LIST_ID = 13;
+    private static final int GENRES_ALL = 14;
+    private static final int GENRES_ID = 15;
     private static final UriMatcher TEST_PROVIDER_URI_MATCHER;
 
     static {
@@ -36,6 +41,10 @@ public class PopularMoviesProvider extends ContentProvider {
                 RECORDS_ALL);
         TEST_PROVIDER_URI_MATCHER.addURI(AUTHORITY, PopularMoviesTable.CONTENT_PATH
                 + "/#", RECORD_ID);
+        TEST_PROVIDER_URI_MATCHER.addURI(AUTHORITY, GenresMoviesTable.CONTENT_PATH,
+                GENRES_ALL);
+        TEST_PROVIDER_URI_MATCHER.addURI(AUTHORITY, GenresMoviesTable.CONTENT_PATH
+                + "/#", GENRES_ID);
         TEST_PROVIDER_URI_MATCHER.addURI(AUTHORITY, ListsTable.CONTENT_PATH,
                 LISTS_ALL);
         TEST_PROVIDER_URI_MATCHER.addURI(AUTHORITY, ListsTable.CONTENT_PATH
@@ -44,6 +53,7 @@ public class PopularMoviesProvider extends ContentProvider {
 
     // wael.mobile.dev.popularmovies.database
     private PopularMoviesDbHelper mOpenHelper;
+
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
@@ -67,6 +77,25 @@ public class PopularMoviesProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
+
+
+            case GENRES_ALL:
+                rowsDeleted = sqlDB.delete(GenresMoviesTable.TABLE_RECORDS, selection,
+                        selectionArgs);
+                break;
+            case GENRES_ID:
+                //retrieve the movie id to delete
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(GenresMoviesTable.TABLE_RECORDS,
+                            GenresMoviesTable._ID + "=" + id, null);
+                } else {
+                    rowsDeleted = sqlDB.delete(GenresMoviesTable.TABLE_RECORDS,
+                            GenresMoviesTable._ID + "=" + id + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
@@ -81,6 +110,10 @@ public class PopularMoviesProvider extends ContentProvider {
                 return PopularMoviesTable.CONTENT_TYPE;
             case RECORD_ID:
                 return PopularMoviesTable.CONTENT_ITEM_TYPE;
+            case GENRES_ALL:
+                return GenresMoviesTable.CONTENT_TYPE;
+            case GENRES_ID:
+                return GenresMoviesTable.CONTENT_ITEM_TYPE;
             case LISTS_ALL:
                 return ListsTable.CONTENT_TYPE;
             case LIST_ID:
@@ -110,6 +143,20 @@ public class PopularMoviesProvider extends ContentProvider {
                             + PopularMoviesTable.TABLE_RECORDS + ", uri: " + uri);
                 }
                 break;
+            case GENRES_ALL:
+
+                id = database.insert(GenresMoviesTable.TABLE_RECORDS, null, values);
+                if (id > 0) {
+                    // notify all listeners of changes and return itemUri:
+                    itemUri = ContentUris.withAppendedId(uri, id);
+                    getContext().getContentResolver().notifyChange(itemUri, null);
+                } else {
+                    // something went wrong:
+                    throw new SQLException("Problem while inserting into "
+                            + GenresMoviesTable.TABLE_RECORDS + ", uri: " + uri);
+                }
+                break;
+
             case LISTS_ALL:
 
                 id = database.insert(ListsTable.TABLE_LISTS, null, values);
@@ -160,6 +207,25 @@ public class PopularMoviesProvider extends ContentProvider {
                 queryBuilder.appendWhere(PopularMoviesTable._ID + "="
                         + uri.getLastPathSegment());
                 break;
+
+            case GENRES_ALL:
+                // Check if the caller has requested a column which does not
+                // exists
+                checkGenresTableColumns(projection);
+                // Set the table
+                queryBuilder.setTables(GenresMoviesTable.TABLE_RECORDS);
+                break;
+            case GENRES_ID:
+                // Check if the caller has requested a column which does not
+                // exists
+                checkGenresTableColumns(projection);
+                // Set the table
+                queryBuilder.setTables(GenresMoviesTable.TABLE_RECORDS);
+                // Adding the ID to the original query
+                queryBuilder.appendWhere(GenresMoviesTable._ID + "="
+                        + uri.getLastPathSegment());
+                break;
+
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
@@ -191,6 +257,20 @@ public class PopularMoviesProvider extends ContentProvider {
                                     + selection, selectionArgs);
                 }
                 break;
+            case GENRES_ID:
+
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = database.update(GenresMoviesTable.TABLE_RECORDS,
+                            values, GenresMoviesTable._ID + "=" + id, null);
+                } else {
+                    rowsUpdated = database.update(GenresMoviesTable.TABLE_RECORDS,
+                            values, GenresMoviesTable._ID + "=" + id + " and "
+                                    + selection, selectionArgs);
+                }
+                break;
+
+
             default:
                 throw new IllegalArgumentException("Unsupported URI: " + uri);
         }
@@ -205,6 +285,21 @@ public class PopularMoviesProvider extends ContentProvider {
                     Arrays.asList(projection));
             HashSet<String> availableColumns = new HashSet<String>(
                     Arrays.asList(PopularMoviesTable.PROJECTION_ALL));
+            // Check if all columns which are requested are available
+            if (!availableColumns.containsAll(requestedColumns)) {
+                throw new IllegalArgumentException(
+                        "Unknown columns in projection");
+            }
+        }
+    }
+
+    private void checkGenresTableColumns(String[] projection) {
+
+        if (projection != null) {
+            HashSet<String> requestedColumns = new HashSet<String>(
+                    Arrays.asList(projection));
+            HashSet<String> availableColumns = new HashSet<String>(
+                    Arrays.asList(GenresMoviesTable.PROJECTION_ALL));
             // Check if all columns which are requested are available
             if (!availableColumns.containsAll(requestedColumns)) {
                 throw new IllegalArgumentException(

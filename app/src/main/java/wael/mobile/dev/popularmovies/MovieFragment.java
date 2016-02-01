@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import wael.mobile.dev.popularmovies.adapter.ListMoviesCursorAdapter;
+import wael.mobile.dev.popularmovies.data.GenresSingleton;
 import wael.mobile.dev.popularmovies.database.PopularMoviesProvider;
 import wael.mobile.dev.popularmovies.database.tables.PopularMoviesTable;
 import wael.mobile.dev.popularmovies.wrapper.ListIMoviesWrapper;
@@ -38,8 +39,8 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
     final String selection = null;
     final String[] selecArguments = null;
     ListMoviesCursorAdapter todoAdapter;
+    GenresSingleton genreData = GenresSingleton.getInstance();
     private String mParam1;
-
     private OnFragmentInteractionListener mListener;
     private ContentResolver cr;
     private Cursor cursor;
@@ -54,7 +55,7 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
      * Views.
      */
     private ListAdapter mAdapter;
-
+    private ListView lvItems;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -83,13 +84,14 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_movies, container, false);
-        final ListView lvItems = (ListView) view.findViewById(R.id.list_movies);
+        lvItems = (ListView) view.findViewById(R.id.list_movies);
         // Setup cursor adapter using cursor from last step
         todoAdapter = new ListMoviesCursorAdapter(getActivity(), cursor);
         lvItems.setAdapter(todoAdapter);
         lvItems.setOnItemClickListener(this);
         //refresh data in the movieFragment
         refreshUi();
+        //  movieList.clear();
 
         return view;
     }
@@ -117,8 +119,29 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
             loadData();
-            mListener.onFragmentInteraction(movieList.get(position).getDescription());
+
+            String item = movieList.get(position).getmIdMovie() + "&" + movieList.get(position).getmOriginalTitle() + "&" + movieList.get(position).getmBackdropPath() + "&" + movieList.get(position).getmOverView() +
+                    "&" + movieList.get(position).getmOriginalLang() + "&" + movieList.get(position).getmVoteCount() + "&" + movieList.get(position).getmGenresIds() +
+                    "&" + movieList.get(position).getmVoteAverage();
+
+            mListener.onFragmentInteraction(item);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        /*deleteOldMoviesItems(movieList.size());
+        movieList.clear();*/
+    }
+
+    private void deleteOldMoviesItems(int number) {
+        // You should probably sort the subselect on something
+        // suitable indicating its age. The COLUMN_ID should do.
+        String where = PopularMoviesTable._ID + " IN (SELECT " + PopularMoviesTable._ID + " FROM " +
+                PopularMoviesTable.TABLE_RECORDS + " ORDER BY " + PopularMoviesTable.ID + " LIMIT ?)";
+        getActivity().getContentResolver()
+                .delete(PopularMoviesProvider.RECORDS_CONTENT_URI, where, new String[]{String.valueOf(number)});
     }
 
     private void loadData() {
@@ -128,8 +151,14 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
                 ListIMoviesWrapper movie = new ListIMoviesWrapper();
-                movie.setTitle(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.LABEL)));
-                movie.setDescription(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.DESCRIPTION)));
+                movie.setmIdMovie(cursor.getInt(cursor.getColumnIndex(PopularMoviesTable.ID)));
+                movie.setmOriginalTitle(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.TITLE)));
+                movie.setmOverView(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.OVERVIEW)));
+                movie.setmBackdropPath(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.BACKDROPPATH)));
+                movie.setmOriginalLang(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.ORIGINALLANGAGE)));
+                movie.setmVoteCount(cursor.getInt(cursor.getColumnIndex(PopularMoviesTable.VOTECOUNT)));
+                movie.setmGenresIds(cursor.getString(cursor.getColumnIndex(PopularMoviesTable.GENREIDS)));
+                movie.setmVoteAverage(cursor.getFloat(cursor.getColumnIndex(PopularMoviesTable.VOTEAVERAGE)));
                 movieList.add(movie);
                 if (!cursor.isClosed()) {
                     cursor.moveToNext();
@@ -142,15 +171,22 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
 
         ((MainActivity) getActivity()).setFragmentRefreshListener(new MainActivity.FragmentRefreshListener() {
             @Override
-            public void onRefresh(ArrayList<ListIMoviesWrapper> array, String title, String description) {
+            public void onRefresh(ArrayList<ListIMoviesWrapper> array, long id, String originaltitle, String overview, String backdroppath,
+                                  String originallangage, int votecount, String genresids, float voteaverage) {
                 // Refresh Your Fragment
-                movieList.clear();
+   /*             movieList.clear();
                 movieList.addAll(array);
                 cursor = todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
                 ListIMoviesWrapper movie = new ListIMoviesWrapper();
-                movie.setTitle(title);
-                movie.setDescription(description);
-                movieList.add(movie);
+                movie.setmIdMovie(id);
+                movie.setmOriginalTitle(originaltitle);
+                movie.setmOverView(overview);
+                movie.setmBackdropPath(backdroppath);
+                movie.setmOriginalLang(originallangage);
+                movie.setmVoteCount(votecount);
+                movie.setmGenresIds(genresids);
+                movie.setmVoteAverage(voteaverage);*/
+                //     movieList.add(movie);
                 Toast.makeText(getActivity(), "New movie added", Toast.LENGTH_LONG).show();
             }
         });
@@ -159,8 +195,13 @@ public class MovieFragment extends Fragment implements AdapterView.OnItemClickLi
 
             @Override
             public void onRefresh(ArrayList<ListIMoviesWrapper> array) {
-                cursor = todoAdapter.swapCursor(cr.query(PopularMoviesProvider.RECORDS_CONTENT_URI, PopularMoviesTable.PROJECTION_ALL, selection, selecArguments, null));
-                movieList.addAll(array);
+                movieList.clear();
+                //movieList.addAll(array);
+                loadData();
+                todoAdapter.changeCursor(cursor);
+      /*          todoAdapter.notifyDataSetChanged();
+                new ListMoviesCursorAdapter(getActivity(), cursor);
+                todoAdapter.changeCursor(todoAdapter);*/
             }
         });
     }

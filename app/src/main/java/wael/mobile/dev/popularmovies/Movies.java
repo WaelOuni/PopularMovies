@@ -10,16 +10,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageButton;
 
-public class Acceuil extends AppCompatActivity implements View.OnClickListener {
+public class Movies extends AppCompatActivity implements View.OnClickListener {
 
-    ImageButton latest, nowplay, popular, toprated, upcoming;
+    ImageButton nowplay, popular, toprated, upcoming;
 
     Intent inten, chooser, intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_acceuil);
+        setContentView(R.layout.activity_movies);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         intent = new Intent(getApplicationContext(), MainActivity.class);
@@ -46,13 +46,11 @@ public class Acceuil extends AppCompatActivity implements View.OnClickListener {
         });
 
 
-        latest = (ImageButton) findViewById(R.id.imageLatest);
         nowplay = (ImageButton) findViewById(R.id.imageNowplaying);
         popular = (ImageButton) findViewById(R.id.imagePopular);
         toprated = (ImageButton) findViewById(R.id.imageToprated);
         upcoming = (ImageButton) findViewById(R.id.imageUpcomming);
 
-        latest.setOnClickListener(this);
 
 
         nowplay.setOnClickListener(this);
@@ -69,10 +67,6 @@ public class Acceuil extends AppCompatActivity implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.imageLatest:
-                intent.putExtra("category", "latest");
-                startActivity(intent);
-                break;
             case R.id.imageNowplaying:
 
                 intent.putExtra("category", "now");
