@@ -19,7 +19,7 @@
             android:layout_height="300dp"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:gravity="center"
-            android:src="@drawable/home_mov"
+            android:src="@drawable/movei_detail"
             android:text="PARALLAXED"
             android:textSize="50sp"
             tools:ignore="HardcodedText" />
